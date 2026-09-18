@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supermarket</title>
+</head>
+<body>
+
+<h2>Add Product</h2>
+
+<input id="name" placeholder="Product Name"><br><br>
+
+<input id="price" type="number" placeholder="Price"><br><br>
+
+<input id="quantity" type="number" placeholder="Quantity"><br><br>
+
+<button onclick="addProduct()">Add Product</button>
+
+<script>
+async function addProduct(){
+
+    const name=document.getElementById("name").value;
+    const price=document.getElementById("price").value;
+    const quantity=document.getElementById("quantity").value;
+
+    const response=await fetch("http://localhost:3000/products",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+            name,
+            price,
+            quantity
+        })
+
+    });
+
+    const data=await response.json();
+
+    alert(JSON.stringify(data));
+
+}
+</script>
+
+</body>
+</html>
