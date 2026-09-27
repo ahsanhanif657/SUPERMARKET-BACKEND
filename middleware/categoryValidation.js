@@ -1,9 +1,9 @@
 const validateCategory = (req, res, next) => {
 
-    const { name } = req.body;
+    const { name } = req.body ?? {};
 
     // Name required
-    if (!name || name.trim() === "") {
+    if (typeof name !== "string" || name.trim() === "") {
         return res.status(400).json({
             error: "Category name is required"
         });

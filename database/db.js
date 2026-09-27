@@ -1,58 +1,60 @@
 const sqlite3 = require("sqlite3").verbose();
+const path = require("path");
 
-const db = new sqlite3.Database("./database/supermarket.db", (err) => {
+const db = new sqlite3.Database(path.join(__dirname, "supermarket.db"), (err) => {
     if (err) {
-        console.log(err.message);
+        console.error("SQLite connection failed:", err.message);
     } else {
         console.log("SQLite Connected Successfully");
     }
 });
 
 db.serialize(() => {
-
-    // Create categories table
     db.run(`
         CREATE TABLE IF NOT EXISTS categories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL
         )
-    `);
+    `, (err) => {
+        if (err) {
+            console.error("Categories table initialization failed:", err.message);
+        } else {
+            console.log("Categories table initialized.");
+        }
+    });
 
-    console.log("Categories table created.");
-
-
-    // Create products table
     db.run(`
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             price REAL NOT NULL,
-            quantity INTEGER NOT NULL
+            quantity INTEGER NOT NULL,
+            category_id INTEGER
         )
-    `);
-
-    console.log("Products table created.");
-
-
-    // Add category_id to existing products table
-    db.run(`
-        ALTER TABLE products
-        ADD COLUMN category_id INTEGER
     `, (err) => {
-
         if (err) {
-            // Column already exists — ignore this error
-            if (err.message.includes("duplicate column name")) {
-                console.log("category_id already exists.");
-            } else {
-                console.log(err.message);
-            }
+            console.error("Products table initialization failed:", err.message);
         } else {
-            console.log("category_id added to products.");
+            console.log("Products table initialized.");
         }
-
     });
 
+    db.all("PRAGMA table_info(products)", (err, columns) => {
+        if (err) {
+            console.error("Products schema check failed:", err.message);
+            return;
+        }
+
+        if (!columns.some((column) => column.name === "category_id")) {
+            db.run("ALTER TABLE products ADD COLUMN category_id INTEGER", (migrationErr) => {
+                if (migrationErr) {
+                    console.error("Products schema migration failed:", migrationErr.message);
+                } else {
+                    console.log("Products category_id column added.");
+                }
+            });
+        }
+    });
 });
 
 module.exports = db;

@@ -1,9 +1,9 @@
 const validateProduct = (req, res, next) => {
 
-    const { name, price, quantity } = req.body;
+    const { name, price, quantity, category_id } = req.body ?? {};
 
     // Product name
-    if (!name || name.trim() === "") {
+    if (typeof name !== "string" || name.trim() === "") {
         return res.status(400).json({
             error: "Product name is required"
         });
@@ -56,6 +56,13 @@ const validateProduct = (req, res, next) => {
     if (!Number.isInteger(quantity) || quantity < 0) {
         return res.status(400).json({
             error: "Quantity must be a non-negative whole number"
+        });
+    }
+
+    if (category_id !== undefined && category_id !== null &&
+        (!Number.isInteger(category_id) || category_id < 1)) {
+        return res.status(400).json({
+            error: "Category ID must be a positive whole number"
         });
     }
 
